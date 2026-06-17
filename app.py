@@ -5,7 +5,7 @@ import pandas as pd
 # CONFIGURAÇÃO DA PÁGINA
 # ============================================================
 st.set_page_config(
-    page_title="Finep Circular - Decisor",
+    page_title="Circula RP - Finep Circular",
     page_icon="♻️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -14,7 +14,7 @@ st.set_page_config(
 # ============================================================
 # TÍTULO E INTRODUÇÃO
 # ============================================================
-st.title("♻️ Finep Circular – Ferramenta de Decisão")
+st.title("♻️ Circula RP – Ferramenta de Decisão")
 st.markdown("""
 **Simulador interativo para escolha do arranjo na chamada:**  
 *Finep Mais Inovação Brasil – Rodada 2 – Economia Circular e Cidades Sustentáveis*
@@ -315,7 +315,6 @@ if simular:
     # Itens específicos
     if arranjo == "Simples":
         check_items.append(("Proponente é empresa com fins lucrativos?", True, "Regulamento 2.1"))
-        # Para Simples, não exigimos ROB >=16M, mas podemos verificar se as coexecutoras são lucrativas se houver
         if num_coexec > 0:
             check_items.append(("Coexecutoras são empresas com fins lucrativos?", True, "Regulamento 2.1 (a verificar)"))
     else:  # Rede
@@ -426,4 +425,4 @@ else:
 # RODAPÉ FIXO
 # ============================================================
 st.sidebar.markdown("---")
-st.sidebar.caption("Desenvolvido para apoiar a tomada de decisão na chamada Finep Circular.")
+st.sidebar.caption("Desenvolvido para apoiar a tomada de decisão na chamada Finep Circular - Projeto Circula RP.")
