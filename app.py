@@ -61,8 +61,18 @@ arranjo = st.sidebar.radio(
     help="Escolha o arranjo de acordo com os participantes e regras (Anexo 1, item 3)."
 )
 
-# ---------- Coexecutoras (se Rede) ----------
-if arranjo == "Em Rede":
+# ---------- Coexecutoras (agora sempre visível) ----------
+if arranjo == "Simples":
+    num_coexec = st.sidebar.number_input(
+        "Número de Coexecutoras (opcional, mínimo 0)",
+        min_value=0,
+        max_value=5,
+        value=0,
+        step=1,
+        help="No Arranjo Simples, coexecutoras são opcionais (Regulamento, item 2.5)."
+    )
+    tem_rob_16 = True  # não é exigido no Simples
+else:  # Em Rede
     num_coexec = st.sidebar.number_input(
         "Número de Coexecutoras (mínimo 2)",
         min_value=2,
@@ -75,9 +85,6 @@ if arranjo == "Em Rede":
         "Pelo menos uma empresa (proponente ou coexecutora) tem ROB ≥ R$ 16M?",
         help="Exigência obrigatória para Arranjo em Rede (Anexo 1, item 3.ii)."
     )
-else:
-    num_coexec = 0
-    tem_rob_16 = True  # não se aplica
 
 # ---------- ICTs ----------
 st.sidebar.subheader("🏛️ Instituições Científicas (ICTs)")
@@ -110,7 +117,8 @@ with st.sidebar.expander("📘 O que é uma Coexecutora?"):
     **Requisitos:**
     - Deve ser **empresa com fins lucrativos** (CNPJ).
     - Realiza dispêndios próprios (gastos) no projeto.
-    - No Arranjo em Rede, **obrigatórias no mínimo 2**.
+    - No Arranjo Simples, são **opcionais**.
+    - No Arranjo em Rede, são **obrigatórias no mínimo 2**.
 
     **Exemplo para seu projeto:**
     - **Transportadora** que faz a coleta e transporte das bombonas de 50L.
@@ -307,6 +315,9 @@ if simular:
     # Itens específicos
     if arranjo == "Simples":
         check_items.append(("Proponente é empresa com fins lucrativos?", True, "Regulamento 2.1"))
+        # Para Simples, não exigimos ROB >=16M, mas podemos verificar se as coexecutoras são lucrativas se houver
+        if num_coexec > 0:
+            check_items.append(("Coexecutoras são empresas com fins lucrativos?", True, "Regulamento 2.1 (a verificar)"))
     else:  # Rede
         check_items.append(("Número de coexecutoras ≥ 2?", num_coexec >= 2, "Anexo 1, item 3.ii"))
         check_items.append(("Cada coexecutora é empresa com fins lucrativos?", True, "Regulamento 2.1 (a verificar)"))
