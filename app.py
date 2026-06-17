@@ -21,7 +21,7 @@ st.markdown("""
 
 **Projeto base:**  
 Compostagem descentralizada com transporte de resíduos orgânicos (bombonas de 50L) de restaurantes para o Assentamento Mário Lago (Ribeirão Preto).  
-Os produtores rurais do assentamento recebem as bombonas, colocam os resíduos em big bags para transformar em composto, utilizam o composto nas hortas e podem comercializar o excedente.
+Os produtores rurais do assentamento **retiram os resíduos das bombonas**, colocam-nos em big bags para compostagem, **devolvem as bombonas vazias** aos restaurantes, utilizam o composto nas hortas e podem comercializar o excedente.
 """)
 st.divider()
 
@@ -95,7 +95,7 @@ sem_ict = len(ict_selecionadas) == 0
 parceiro_social = st.sidebar.checkbox(
     "Incluir Parceiro Social (Cooperativa de Agricultores do Assentamento Mário Lago)",
     value=True,
-    help="Gera 1 ponto extra no mérito. O parceiro NÃO recebe recursos financeiros da Finep, mas recebe as bombonas com resíduos para compostagem."
+    help="Gera 1 ponto extra no mérito. O parceiro NÃO recebe recursos financeiros da Finep, mas recebe as bombonas com resíduos para retirar o conteúdo e devolver as bombonas vazias."
 )
 
 # ---------- Botão de simulação ----------
@@ -142,10 +142,11 @@ with st.sidebar.expander("📘 O que é Parceiro Social?"):
 
     **Fluxo real da parceria:**
     1. Os restaurantes geram resíduos orgânicos (restos de vegetais, frutas e comidas).
-    2. A logística (proponente ou transportadora) coleta as bombonas de 50L e leva até o assentamento.
-    3. Os produtores rurais do assentamento recebem as bombonas e colocam os resíduos em **big bags** para transformar em **composto**.
-    4. O composto gerado é utilizado nas hortas do assentamento.
-    5. O **excedente** de hortaliças e do composto pode ser comercializado futuramente, gerando renda extra para a comunidade.
+    2. A logística (proponente ou transportadora) coleta as bombonas de 50L **cheias** e leva até o assentamento.
+    3. Os produtores rurais **retiram os resíduos** das bombonas e os colocam em **big bags** para transformar em composto.
+    4. Os produtores **devolvem as bombonas vazias** aos restaurantes, que as enchem novamente.
+    5. O composto gerado é utilizado nas hortas do assentamento.
+    6. O **excedente** de hortaliças e do composto pode ser comercializado futuramente.
 
     **Regras:**
     - **Facultativo** – dá 1 ponto extra no mérito.
@@ -183,7 +184,7 @@ regras = {
         "Coexecutoras são **opcionais** (não obrigatórias)",
         "Valor solicitado à Finep: entre **R$ 5M e R$ 20M**",
         "Pelo menos uma ICT não pode ser instituída ou mantida pela proponente ou coexecutoras",
-        "A cooperativa do assentamento pode ser **Parceira Social** (facultativo, +1 ponto) – ela recebe as bombonas e faz a compostagem em big bags, mas NÃO recebe recursos financeiros da Finep."
+        "A cooperativa do assentamento pode ser **Parceira Social** (facultativo, +1 ponto) – ela recebe as bombonas, retira os resíduos para big bags, devolve as bombonas vazias, e utiliza o composto nas hortas. **Não recebe recursos financeiros da Finep.**"
     ],
     "Em Rede": [
         "Participantes mínimos: 1 proponente + **2 coexecutoras obrigatórias** + 1 ICT",
@@ -264,7 +265,7 @@ if simular:
     if parceiro_social:
         st.markdown("""
         - **Parceiro Social:** Cooperativa de Agricultores do Assentamento Mário Lago (facultativo, +1 ponto)  
-          ↳ Recebe as bombonas de 50L com resíduos orgânicos, coloca em big bags para compostagem, usa o composto nas hortas e pode comercializar o excedente.  
+          ↳ **Fluxo:** recebe as bombonas de 50L **cheias** → retira os resíduos para big bags → **devolve as bombonas vazias** aos restaurantes → compostagem → uso nas hortas → comercialização do excedente.  
           ⚠️ **Não recebe recursos financeiros da Finep** – apenas os insumos e suporte técnico.
         """)
 
@@ -359,7 +360,7 @@ if simular:
         **Cenário Simples (recomendado se você não tem 2 parceiras empresariais):**
         - **Proponente:** Sua empresa (logística reversa) – recebe R$ 7M da Finep e aporta R$ 3M.
         - **ICT:** UNAERP (validação e pesquisa).
-        - **Parceiro Social:** Cooperativa do Assentamento – recebe as bombonas com resíduos, faz a compostagem em big bags, usa o composto nas hortas e pode vender o excedente.  
+        - **Parceiro Social:** Cooperativa do Assentamento – recebe as bombonas **cheias**, retira os resíduos para big bags, **devolve as bombonas vazias**, faz a compostagem, usa o composto nas hortas e pode vender o excedente.  
           ⚠️ **Não recebe dinheiro da Finep**, apenas os insumos e suporte técnico.
         - **Atividades:** Coleta, transporte, compostagem descentralizada, cultivo de hortaliças, monitoramento.
         - **Contrapartida:** 30% (exemplo para Média I) = R$ 3M.
@@ -369,7 +370,7 @@ if simular:
         - **Coexecutora 1:** Transportadora local (faz o frete das bombonas de 50L).
         - **Coexecutora 2:** Rede de restaurantes (separa e armazena resíduos orgânicos).
         - **ICT:** IFSP ou UNAERP (validação).
-        - **Parceiro Social:** Assentamento – recebe as bombonas, processa em big bags, usa composto nas hortas e comercializa excedente.
+        - **Parceiro Social:** Assentamento – recebe as bombonas, retira os resíduos, devolve as bombonas vazias, processa em big bags, usa composto nas hortas e comercializa excedente.
         - **Contrapartida:** 15% = R$ 1,5M (economia de R$ 1,5M em relação ao Simples).
         """)
 
@@ -389,7 +390,7 @@ else:
     - **Checklist de elegibilidade** para cada arranjo.
     - **Explicações práticas** com exemplos do seu projeto.
     - **Alertas** sobre regras como: cooperativa não pode ser coexecutora, necessidade de 2 coexecutoras no Rede, ROB ≥ R$16M, etc.
-    - **Fluxo real da parceria:** restaurantes → bombonas 50L → assentamento → big bags → compostagem → hortas → venda do excedente.
+    - **Fluxo real da parceria:** restaurantes → bombonas 50L (cheias) → assentamento → retirada dos resíduos → devolução das bombonas vazias → big bags → compostagem → hortas → venda do excedente.
     """)
 
 # ============================================================
