@@ -14,7 +14,7 @@ def brl(valor):
 # CONFIGURAÇÃO DA PÁGINA
 # ============================================================
 st.set_page_config(
-    page_title="Circula RP - Finep Circular",
+    page_title="Circula RP - Finep",
     page_icon="♻️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -264,7 +264,7 @@ if simular:
     st.header("📊 Resultados da Simulação")
     st.markdown(f"**Arranjo selecionado:** `{arranjo}`  |  **Porte da empresa:** `{porte}`")
 
-    # ---- MÉTRICAS COM FORMATAÇÃO BRASILEIRA ----
+    # ---- MÉTRICAS ----
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Percentual de Contrapartida", f"{perc:.1%}")
@@ -327,7 +327,7 @@ if simular:
         icon = "✅" if ok else "❌"
         st.markdown(f"{icon} **{desc}** – *{ref}*" + ("" if ok else " ⚠️ **ATENÇÃO!**"))
 
-    # ---- COMPARAÇÃO COM FORMATAÇÃO BRASILEIRA ----
+    # ---- COMPARAÇÃO ----
     st.subheader("📊 Comparação Lado a Lado: Simples vs Rede (mesmo porte)")
     dados_comp = []
     for arr in ["Simples", "Em Rede"]:
@@ -346,7 +346,7 @@ if simular:
     df_comp = pd.DataFrame(dados_comp)
     st.table(df_comp)
 
-    # ---- ECONOMIA COM FORMATAÇÃO ----
+    # ---- ECONOMIA ----
     if arranjo == "Em Rede":
         perc_simples = contrapartida_table.get((porte, "Simples"), None)
         if perc_simples is not None:
