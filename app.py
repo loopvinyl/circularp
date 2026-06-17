@@ -5,7 +5,6 @@ import pandas as pd
 # FUNÇÃO DE FORMATAÇÃO BRASILEIRA (R$)
 # ============================================================
 def brl(valor):
-    """Formata um número para o padrão brasileiro (R$ 1.234.567,89)"""
     if valor is None:
         return "R$ 0,00"
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -110,6 +109,41 @@ parceiro_social = st.sidebar.checkbox(
     "Incluir Parceiro Social (Cooperativa de Agricultores do Assentamento Mário Lago)",
     value=True,
     help="Gera 1 ponto extra no mérito. O parceiro NÃO recebe recursos financeiros da Finep, mas recebe as bombonas com resíduos para retirar o conteúdo e devolver as bombonas vazias."
+)
+
+# ---------- ESTIMATIVA OPERACIONAL ----------
+st.sidebar.subheader("🚚 Estimativa Operacional (Diesel)")
+distancia_ida = st.sidebar.number_input(
+    "Distância (ida) – km",
+    min_value=1,
+    max_value=200,
+    value=25,
+    step=1,
+    help="Distância de Ribeirão Preto até o Assentamento Mário Lago (sugestão: 25 km)."
+)
+consumo_km_l = st.sidebar.number_input(
+    "Consumo do veículo (km/L)",
+    min_value=1.0,
+    max_value=20.0,
+    value=4.0,
+    step=0.5,
+    help="Quantos km o veículo faz com 1 litro de diesel (sugestão: 4 km/L para caminhão)."
+)
+preco_diesel = st.sidebar.number_input(
+    "Preço do diesel (R$/L)",
+    min_value=1.0,
+    max_value=15.0,
+    value=6.0,
+    step=0.5,
+    help="Preço médio do diesel na região (sugestão: R$ 6,00)."
+)
+perc_combustivel = st.sidebar.slider(
+    "% do orçamento para combustível",
+    min_value=1,
+    max_value=30,
+    value=10,
+    step=1,
+    help="Percentual do valor total do projeto destinado ao custo com diesel (sugestão: 10%)."
 )
 
 # ---------- Botão ----------
@@ -250,7 +284,7 @@ if simular:
         st.error("❌ No Arranjo em Rede, **pelo menos uma empresa** (proponente ou coexecutora) deve ter ROB ≥ R$ 16M.")
         st.stop()
 
-    # ---- CÁLCULOS ----
+    # ---- CÁLCULOS FINANCEIROS ----
     perc = contrapartida_table.get((porte, arranjo), None)
     if perc is None:
         st.error("Porte ou arranjo não encontrado na tabela de contrapartida.")
@@ -260,11 +294,27 @@ if simular:
     finep = valor_total - contrapartida
     dentro_limites = verificar_limites(arranjo, valor_total)
 
+    # ---- CÁLCULOS OPERACIONAIS ----
+    valor_combustivel = valor_total * (perc_combustivel / 100)
+    litros_diesel = valor_combustivel / preco_diesel if preco_diesel > 0 else 0
+    distancia_total_viagem = distancia_ida * 2  # ida + volta
+    litros_por_viagem = distancia_total_viagem / consumo_km_l if consumo_km_l > 0 else 0
+    num_viagens = litros_diesel / litros_por_viagem if litros_por_viagem > 0 else 0
+    dias_uteis = 6  # segunda a sábado
+    viagens_por_dia = num_viagens / (52 * dias_uteis)  # 52 semanas no ano (projeto de 36 meses? consideramos 1 ano para simplificar)
+    # Melhor: estimar por semana
+    viagens_por_semana = num_viagens / 52  # 52 semanas no período de 1 ano (assumindo que o projeto dura 1 ano, ou podemos parametrizar)
+    # Vamos usar o prazo de 36 meses (3 anos) – mas podemos simplificar: estimar para o total do projeto, e depois por dia útil.
+    # Vamos considerar que o projeto tem 36 meses, ou seja, 36*4.3 = ~155 semanas
+    semanas_projeto = 36 * 4.3  # ~155 semanas
+    viagens_por_semana_projeto = num_viagens / semanas_projeto if semanas_projeto > 0 else 0
+    viagens_por_dia_util = viagens_por_semana_projeto / dias_uteis
+
     # ---- CABEÇALHO ----
     st.header("📊 Resultados da Simulação")
     st.markdown(f"**Arranjo selecionado:** `{arranjo}`  |  **Porte da empresa:** `{porte}`")
 
-    # ---- MÉTRICAS ----
+    # ---- MÉTRICAS FINANCEIRAS ----
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Percentual de Contrapartida", f"{perc:.1%}")
@@ -378,6 +428,29 @@ if simular:
     """)
     st.info(f"📌 **Para este cenário, a contrapartida exigida é de {brl(contrapartida)}.**  \nVerifique se sua empresa tem capacidade para aportar esse valor, consultando os demonstrativos financeiros.")
 
+    # ---- ESTIMATIVA OPERACIONAL (DIESEL) ----
+    st.subheader("🚚 Estimativa Operacional – Transporte de Bombonas")
+    st.markdown(f"""
+    **Premissas adotadas:**
+    - Distância (ida): **{distancia_ida} km**
+    - Consumo do veículo: **{consumo_km_l} km/L**
+    - Preço do diesel: **R$ {preco_diesel:.2f}/L**
+    - Percentual do orçamento destinado a diesel: **{perc_combustivel}%**
+    - Período do projeto: **36 meses** (≈ 155 semanas, 6 dias úteis/semana)
+
+    **Cálculos:**
+    - Valor destinado ao diesel: {brl(valor_combustivel)}
+    - Litros de diesel que podem ser comprados: **{litros_diesel:,.0f} L**
+    - Distância por viagem (ida + volta): **{distancia_total_viagem} km**
+    - Litros consumidos por viagem: **{litros_por_viagem:.1f} L**
+    - Número total de viagens (ida + volta) possíveis: **{num_viagens:,.0f}**
+    - Viagens por semana (durante 36 meses): **{viagens_por_semana_projeto:.1f}**
+    - Viagens por dia útil (segunda a sábado): **{viagens_por_dia_util:.1f}**
+
+    **Interpretação:**  
+    Com o valor destinado ao diesel, seria possível realizar cerca de **{viagens_por_dia_util:.0f} viagens por dia útil** (considerando 6 dias por semana), ou aproximadamente **{viagens_por_semana_projeto:.0f} viagens por semana**, durante os 36 meses do projeto.
+    """)
+
     # ---- EXEMPLO PRÁTICO ----
     with st.expander("🌱 Exemplo prático para seu projeto (compostagem e hortas)", expanded=True):
         st.markdown(f"""
@@ -399,7 +472,7 @@ if simular:
     # ---- REFERÊNCIAS ----
     st.divider()
     st.caption("**Referências:** Regulamento (itens 2.5, 2.6, 4.5, 7.1.7), Anexo 1 (itens 3, 5, 6), FAQ (p.4-9).")
-    st.caption("Este simulador é uma ferramenta de apoio e não substitui a leitura integral do edital. Consulte um especialista para validação final.")
+    st.caption("A estimativa operacional é ilustrativa e baseada em premissas definidas pelo usuário. Consulte um especialista para validação.")
 
 else:
     # ---- TELA INICIAL ----
@@ -412,6 +485,7 @@ else:
     - **Explicações práticas** com exemplos do seu projeto.
     - **Alertas** sobre regras como: cooperativa não pode ser coexecutora, necessidade de 2 coexecutoras no Rede, ROB ≥ R$16M, etc.
     - **Fluxo real da parceria:** restaurantes → bombonas 50L (cheias) → assentamento → retirada dos resíduos → devolução das bombonas vazias → big bags → compostagem → hortas → venda do excedente.
+    - **Estimativa operacional** de litros de diesel, viagens por semana e por dia útil.
     """)
 
 # ============================================================
