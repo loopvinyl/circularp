@@ -156,6 +156,24 @@ with st.sidebar.expander("📘 O que é Parceiro Social?"):
     ⚠️ **O parceiro social recebe os insumos (resíduos) e a infraestrutura para compostagem, mas NÃO recebe dinheiro da Finep.**
     """)
 
+with st.sidebar.expander("📘 O que é ROB (Receita Operacional Bruta)?"):
+    st.markdown("""
+    **ROB** significa **Receita Operacional Bruta**.
+
+    - É a receita bruta da empresa com suas atividades operacionais principais, conforme consta no **Demonstrativo de Resultados do Exercício (DRE)**.
+    - Para fins deste edital, considera-se a **ROB do último ano com demonstrativos financeiros fechados** (Anexo 1, item 6, p.4).
+
+    **Para que serve?**
+    - A ROB classifica o porte da empresa (Micro, Pequena, Média I, Média II ou Grande).
+    - Essa classificação define o **percentual mínimo de contrapartida** que a empresa precisará aportar no projeto.
+
+    **Atenção (Regulamento, item 4.5.1, p.4):**
+    - No caso de propostas com **múltiplas empresas (coexecutoras)**, considera-se a ROB da **empresa de maior porte** para definir o percentual.
+    - No caso de **grupo econômico**, considera-se o maior faturamento do grupo.
+
+    **Exemplo prático:** Se a proponente tiver ROB de R$ 50M (Média I) e a coexecutora tiver R$ 200M (Média II), a contrapartida será calculada com base no porte da Média II (maior ROB).
+    """)
+
 st.sidebar.markdown("---")
 st.sidebar.caption("**Referências:** Regulamento, Anexo 1, FAQ e Apresentação da chamada.")
 
