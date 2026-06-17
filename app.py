@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 
 # ============================================================
+# FUNÇÃO DE FORMATAÇÃO BRASILEIRA (R$)
+# ============================================================
+def brl(valor):
+    """Formata um número para o padrão brasileiro (R$ 1.234.567,89)"""
+    if valor is None:
+        return "R$ 0,00"
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+# ============================================================
 # CONFIGURAÇÃO DA PÁGINA
 # ============================================================
 st.set_page_config(
@@ -61,7 +70,7 @@ arranjo = st.sidebar.radio(
     help="Escolha o arranjo de acordo com os participantes e regras (Anexo 1, item 3)."
 )
 
-# ---------- Coexecutoras (agora sempre visível) ----------
+# ---------- Coexecutoras ----------
 if arranjo == "Simples":
     num_coexec = st.sidebar.number_input(
         "Número de Coexecutoras (opcional, mínimo 0)",
@@ -71,7 +80,7 @@ if arranjo == "Simples":
         step=1,
         help="No Arranjo Simples, coexecutoras são opcionais (Regulamento, item 2.5)."
     )
-    tem_rob_16 = True  # não é exigido no Simples
+    tem_rob_16 = True
 else:  # Em Rede
     num_coexec = st.sidebar.number_input(
         "Número de Coexecutoras (mínimo 2)",
@@ -94,21 +103,19 @@ ict_selecionadas = st.sidebar.multiselect(
     default=[],
     help="Pelo menos uma ICT é obrigatória (Regulamento, item 2.6). Pode selecionar ambas."
 )
-
-# Verifica se há ICT selecionada
 sem_ict = len(ict_selecionadas) == 0
 
-# ---------- Parceiro Social (facultativo) ----------
+# ---------- Parceiro Social ----------
 parceiro_social = st.sidebar.checkbox(
     "Incluir Parceiro Social (Cooperativa de Agricultores do Assentamento Mário Lago)",
     value=True,
     help="Gera 1 ponto extra no mérito. O parceiro NÃO recebe recursos financeiros da Finep, mas recebe as bombonas com resíduos para retirar o conteúdo e devolver as bombonas vazias."
 )
 
-# ---------- Botão de simulação ----------
+# ---------- Botão ----------
 simular = st.sidebar.button("🔄 Simular Cenário", type="primary", use_container_width=True)
 
-# ---------- EXPANSORES COM EXPLICAÇÕES ----------
+# ---------- EXPANSORES ----------
 with st.sidebar.expander("📘 O que é uma Coexecutora?"):
     st.markdown("""
     **Definição (Regulamento, item 2.5, p.2):**  
@@ -150,18 +157,16 @@ with st.sidebar.expander("📘 O que é Parceiro Social?"):
 
     **Fluxo real da parceria:**
     1. Os restaurantes geram resíduos orgânicos (restos de vegetais, frutas e comidas).
-    2. A logística (proponente ou transportadora) coleta as bombonas de 50L **cheias** e leva até o assentamento.
-    3. Os produtores rurais **retiram os resíduos** das bombonas e os colocam em **big bags** para transformar em composto.
-    4. Os produtores **devolvem as bombonas vazias** aos restaurantes, que as enchem novamente.
+    2. A logística coleta as bombonas de 50L **cheias** e leva até o assentamento.
+    3. Os produtores rurais **retiram os resíduos** das bombonas e os colocam em **big bags** para compostagem.
+    4. Os produtores **devolvem as bombonas vazias** aos restaurantes.
     5. O composto gerado é utilizado nas hortas do assentamento.
-    6. O **excedente** de hortaliças e do composto pode ser comercializado futuramente.
+    6. O **excedente** de hortaliças e do composto pode ser comercializado.
 
     **Regras:**
-    - **Facultativo** – dá 1 ponto extra no mérito.
-    - **Não pode receber recursos financeiros** da subvenção (não é beneficiária).
-    - A participação é documentada pela **Carta de Manifestação de Interesse (Anexo 6)**.
-
-    ⚠️ **O parceiro social recebe os insumos (resíduos) e a infraestrutura para compostagem, mas NÃO recebe dinheiro da Finep.**
+    - **Facultativo** – dá 1 ponto extra.
+    - **Não pode receber recursos financeiros** da subvenção.
+    - Documentado pela **Carta de Manifestação de Interesse (Anexo 6)**.
     """)
 
 with st.sidebar.expander("📘 O que é ROB (Receita Operacional Bruta)?"):
@@ -189,7 +194,6 @@ st.sidebar.caption("**Referências:** Regulamento, Anexo 1, FAQ e Apresentação
 # DICIONÁRIOS E FUNÇÕES
 # ============================================================
 
-# Tabela de contrapartida (Anexo 1, item 6)
 contrapartida_table = {
     ("Microempresa e Pequeno Porte (ROB < R$ 4,8M)", "Simples"): 0.05,
     ("Microempresa e Pequeno Porte (ROB < R$ 4,8M)", "Em Rede"): 0.05,
@@ -203,7 +207,6 @@ contrapartida_table = {
     ("Grande Empresa (ROB > R$ 300M)", "Em Rede"): 0.25,
 }
 
-# Regras específicas por arranjo (para exibição)
 regras = {
     "Simples": [
         "Participantes mínimos: 1 empresa proponente + 1 ICT",
@@ -226,7 +229,7 @@ regras = {
 def verificar_limites(arranjo, valor_total):
     if arranjo == "Simples":
         return 5_000_000 <= valor_total <= 20_000_000
-    else:  # Rede
+    else:
         return 5_000_000 <= valor_total <= 30_000_000
 
 # ============================================================
@@ -234,7 +237,7 @@ def verificar_limites(arranjo, valor_total):
 # ============================================================
 
 if simular:
-    # ---- VALIDAÇÕES INICIAIS ----
+    # ---- VALIDAÇÕES ----
     if sem_ict:
         st.error("❌ Você **deve** selecionar pelo menos uma ICT (UNAERP ou IFSP) para participar.")
         st.stop()
@@ -257,25 +260,25 @@ if simular:
     finep = valor_total - contrapartida
     dentro_limites = verificar_limites(arranjo, valor_total)
 
-    # ---- CABEÇALHO DOS RESULTADOS ----
+    # ---- CABEÇALHO ----
     st.header("📊 Resultados da Simulação")
     st.markdown(f"**Arranjo selecionado:** `{arranjo}`  |  **Porte da empresa:** `{porte}`")
 
-    # ---- MÉTRICAS PRINCIPAIS ----
+    # ---- MÉTRICAS COM FORMATAÇÃO BRASILEIRA ----
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Percentual de Contrapartida", f"{perc:.1%}")
     with col2:
-        st.metric("Valor da Contrapartida (R$)", f"R$ {contrapartida:,.2f}")
+        st.metric("Valor da Contrapartida (R$)", brl(contrapartida))
     with col3:
-        st.metric("Valor Solicitado à Finep (R$)", f"R$ {finep:,.2f}")
+        st.metric("Valor Solicitado à Finep (R$)", brl(finep))
 
     # ---- VERIFICAÇÃO DE LIMITES ----
     if dentro_limites:
-        st.success(f"✅ O valor total (R$ {valor_total:,.2f}) está dentro dos limites para o arranjo {arranjo}.")
+        st.success(f"✅ O valor total ({brl(valor_total)}) está dentro dos limites para o arranjo {arranjo}.")
     else:
         limite = "R$ 20M" if arranjo == "Simples" else "R$ 30M"
-        st.error(f"❌ O valor total (R$ {valor_total:,.2f}) **excede** o limite máximo para o arranjo {arranjo} ({limite}). Ajuste o valor ou mude o arranjo.")
+        st.error(f"❌ O valor total ({brl(valor_total)}) **excede** o limite máximo para o arranjo {arranjo} ({limite}). Ajuste o valor ou mude o arranjo.")
 
     # ---- PARTICIPANTES ----
     st.subheader("👥 Participantes no Projeto")
@@ -283,7 +286,7 @@ if simular:
         st.markdown(f"- **Proponente:** 1 empresa (com fins lucrativos) – líder e responsável")
         st.markdown(f"- **Coexecutoras:** {num_coexec} (opcionais, você escolheu {num_coexec})")
         st.markdown(f"- **ICT(s):** {', '.join(ict_selecionadas) if ict_selecionadas else 'Nenhuma selecionada'} (obrigatória)")
-    else:  # Rede
+    else:
         st.markdown(f"- **Proponente:** 1 empresa (com fins lucrativos) – líder e responsável")
         st.markdown(f"- **Coexecutoras:** {num_coexec} empresas (com fins lucrativos) – obrigatórias, participação efetiva")
         st.markdown(f"- **ICT(s):** {', '.join(ict_selecionadas) if ict_selecionadas else 'Nenhuma selecionada'} (obrigatória, ≥5% do orçamento)")
@@ -295,42 +298,37 @@ if simular:
           ⚠️ **Não recebe recursos financeiros da Finep** – apenas os insumos e suporte técnico.
         """)
 
-    # ---- REGRAS DO ARRANJO ----
+    # ---- REGRAS ----
     with st.expander("📋 Regras do Arranjo Selecionado (clique para expandir)", expanded=True):
         for regra in regras[arranjo]:
             st.markdown(f"- {regra}")
 
-    # ---- CHECKLIST DE ELEGIBILIDADE ----
+    # ---- CHECKLIST ----
     st.subheader("✅ Checklist de Elegibilidade para este Arranjo")
-
     check_items = []
 
-    # Itens comuns
     check_items.append(("Há pelo menos uma ICT selecionada?", len(ict_selecionadas) >= 1, "Regulamento 2.6"))
     check_items.append(("Pelo menos uma ICT é independente (não mantida pela proponente)?", True, "Anexo 1, item 3 (verificar com as ICTs)"))
     check_items.append(("Valor total dentro do limite do arranjo?", dentro_limites, "Anexo 1, item 5"))
     if parceiro_social:
         check_items.append(("Parceiro Social tem Carta de Manifestação de Interesse (Anexo 6) assinada?", True, "Anexo 6 (obrigatório para pontuação)"))
 
-    # Itens específicos
     if arranjo == "Simples":
         check_items.append(("Proponente é empresa com fins lucrativos?", True, "Regulamento 2.1"))
         if num_coexec > 0:
             check_items.append(("Coexecutoras são empresas com fins lucrativos?", True, "Regulamento 2.1 (a verificar)"))
-    else:  # Rede
+    else:
         check_items.append(("Número de coexecutoras ≥ 2?", num_coexec >= 2, "Anexo 1, item 3.ii"))
         check_items.append(("Cada coexecutora é empresa com fins lucrativos?", True, "Regulamento 2.1 (a verificar)"))
         check_items.append(("Pelo menos uma empresa tem ROB ≥ R$ 16M?", tem_rob_16, "Anexo 1, item 3.ii"))
         check_items.append(("Proponente e coexecutoras não têm conflitos de grupo econômico?", True, "Anexo 1, item 3.ii (a verificar)"))
 
-    # Exibe checklist
     for desc, ok, ref in check_items:
         icon = "✅" if ok else "❌"
         st.markdown(f"{icon} **{desc}** – *{ref}*" + ("" if ok else " ⚠️ **ATENÇÃO!**"))
 
-    # ---- COMPARAÇÃO ENTRE OS DOIS ARRANJOS (MESMO PORTE) ----
+    # ---- COMPARAÇÃO COM FORMATAÇÃO BRASILEIRA ----
     st.subheader("📊 Comparação Lado a Lado: Simples vs Rede (mesmo porte)")
-
     dados_comp = []
     for arr in ["Simples", "Em Rede"]:
         p = contrapartida_table.get((porte, arr), None)
@@ -340,22 +338,22 @@ if simular:
             dados_comp.append({
                 "Arranjo": arr,
                 "% Contrapartida": f"{p:.1%}",
-                "Contrapartida (R$)": f"R$ {cp:,.2f}",
-                "Finep (R$)": f"R$ {fp:,.2f}",
+                "Contrapartida (R$)": brl(cp),
+                "Finep (R$)": brl(fp),
                 "Limite Máximo Finep": "R$ 20M" if arr == "Simples" else "R$ 30M",
                 "Coexecutoras obrigatórias": "Não" if arr == "Simples" else "Sim (≥2)"
             })
     df_comp = pd.DataFrame(dados_comp)
     st.table(df_comp)
 
-    # Destaque da economia
+    # ---- ECONOMIA COM FORMATAÇÃO ----
     if arranjo == "Em Rede":
         perc_simples = contrapartida_table.get((porte, "Simples"), None)
         if perc_simples is not None:
             cp_simples = perc_simples * valor_total
             economia = cp_simples - contrapartida
             if economia > 0:
-                st.success(f"💰 Comparado ao Arranjo Simples, você **economiza R$ {economia:,.2f}** em contrapartida com o Arranjo em Rede.")
+                st.success(f"💰 Comparado ao Arranjo Simples, você **economiza {brl(economia)}** em contrapartida com o Arranjo em Rede.")
             else:
                 st.info("Para este porte, os percentuais de contrapartida são iguais nos dois arranjos.")
     else:
@@ -364,11 +362,10 @@ if simular:
             cp_rede = perc_rede * valor_total
             diferenca = contrapartida - cp_rede
             if diferenca > 0:
-                st.info(f"Se optar pelo Arranjo em Rede, você poderia reduzir a contrapartida em R$ {diferenca:,.2f}, mas precisaria de 2 coexecutoras.")
+                st.info(f"Se optar pelo Arranjo em Rede, você poderia reduzir a contrapartida em {brl(diferenca)}, mas precisaria de 2 coexecutoras.")
 
-    # ---- CAPACIDADE FINANCEIRA (item 7.1.7) ----
+    # ---- CAPACIDADE FINANCEIRA ----
     st.subheader("💡 Verificação de Capacidade Financeira (Regulamento, item 7.1.7)")
-
     st.markdown("""
     A empresa deve atender **cumulativamente**:
     - **Patrimônio Líquido** positivo.
@@ -379,42 +376,38 @@ if simular:
         3. Se RO for positivo e Contrapartida > 20% do RO:  
            Endividamento Oneroso ≤ 30% do Ativo Total **e** Contrapartida ≤ 50% do Ativo Total.
     """)
+    st.info(f"📌 **Para este cenário, a contrapartida exigida é de {brl(contrapartida)}.**  \nVerifique se sua empresa tem capacidade para aportar esse valor, consultando os demonstrativos financeiros.")
 
-    st.info(f"📌 **Para este cenário, a contrapartida exigida é de R$ {contrapartida:,.2f}.**  \nVerifique se sua empresa tem capacidade para aportar esse valor, consultando os demonstrativos financeiros.")
-
-    # ---- EXEMPLO PRÁTICO PARA O PROJETO ----
+    # ---- EXEMPLO PRÁTICO ----
     with st.expander("🌱 Exemplo prático para seu projeto (compostagem e hortas)", expanded=True):
-        st.markdown("""
+        st.markdown(f"""
         **Cenário Simples (recomendado se você não tem 2 parceiras empresariais):**
-        - **Proponente:** Sua empresa (logística reversa) – recebe R$ 7M da Finep e aporta R$ 3M.
+        - **Proponente:** Sua empresa – recebe {brl(finep)} da Finep e aporta {brl(contrapartida)}.
         - **ICT:** UNAERP (validação e pesquisa).
-        - **Parceiro Social:** Cooperativa do Assentamento – recebe as bombonas **cheias**, retira os resíduos para big bags, **devolve as bombonas vazias**, faz a compostagem, usa o composto nas hortas e pode vender o excedente.  
-          ⚠️ **Não recebe dinheiro da Finep**, apenas os insumos e suporte técnico.
-        - **Atividades:** Coleta, transporte, compostagem descentralizada, cultivo de hortaliças, monitoramento.
-        - **Contrapartida:** 30% (exemplo para Média I) = R$ 3M.
-        
+        - **Parceiro Social:** Assentamento – recebe as bombonas **cheias**, retira os resíduos para big bags, **devolve as bombonas vazias**, faz a compostagem, usa o composto nas hortas e pode vender o excedente.  
+          ⚠️ **Não recebe dinheiro da Finep**.
+        - **Contrapartida:** {perc:.1%} = {brl(contrapartida)}.
+
         **Cenário Rede (se você tiver 2 parceiras):**
-        - **Proponente:** Sua empresa – coordena, recebe R$ 8,5M, aporta R$ 1,5M.
-        - **Coexecutora 1:** Transportadora local (faz o frete das bombonas de 50L).
-        - **Coexecutora 2:** Rede de restaurantes (separa e armazena resíduos orgânicos).
+        - **Proponente:** Sua empresa – coordena e recebe os recursos.
+        - **Coexecutora 1:** Transportadora local (frete das bombonas).
+        - **Coexecutora 2:** Rede de restaurantes (separa e armazena resíduos).
         - **ICT:** IFSP ou UNAERP (validação).
-        - **Parceiro Social:** Assentamento – recebe as bombonas, retira os resíduos, devolve as bombonas vazias, processa em big bags, usa composto nas hortas e comercializa excedente.
-        - **Contrapartida:** 15% = R$ 1,5M (economia de R$ 1,5M em relação ao Simples).
+        - **Parceiro Social:** Assentamento – mesmo fluxo de retirada e devolução das bombonas.
         """)
 
-    # ---- REFERÊNCIAS FINAIS ----
+    # ---- REFERÊNCIAS ----
     st.divider()
     st.caption("**Referências:** Regulamento (itens 2.5, 2.6, 4.5, 7.1.7), Anexo 1 (itens 3, 5, 6), FAQ (p.4-9).")
     st.caption("Este simulador é uma ferramenta de apoio e não substitui a leitura integral do edital. Consulte um especialista para validação final.")
 
 else:
-    # ---- TELA INICIAL (antes da simulação) ----
+    # ---- TELA INICIAL ----
     st.info("👈 **Preencha os parâmetros no painel lateral e clique em 'Simular Cenário'** para visualizar os resultados e comparar os arranjos.")
-
     st.markdown("""
     ### O que você vai encontrar aqui:
     - **Comparação lado a lado** dos dois arranjos (Simples vs Rede).
-    - **Cálculo automático** da contrapartida e do valor da Finep.
+    - **Cálculo automático** da contrapartida e do valor da Finep, com valores em **formato brasileiro** (R$ 1.234.567,89).
     - **Checklist de elegibilidade** para cada arranjo.
     - **Explicações práticas** com exemplos do seu projeto.
     - **Alertas** sobre regras como: cooperativa não pode ser coexecutora, necessidade de 2 coexecutoras no Rede, ROB ≥ R$16M, etc.
