@@ -418,4 +418,4 @@ else:
 # RODAPÉ FIXO
 # ============================================================
 st.sidebar.markdown("---")
-st.sidebar.caption("Desenvolvido para apoiar a tomada de decisão na chamada Finep Circular - Projeto Circula RP.")
+st.sidebar.caption("Desenvolvido para apoiar a tomada de decisão na chamada Finep Mais Inovação Brasil - Projeto Circula RP.")
